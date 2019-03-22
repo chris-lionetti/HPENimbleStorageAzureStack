@@ -1,2 +1,2 @@
-$UserPath = "%UserProfile%\Desktop\outputfile.txt"
-Get-process | Out-File $Userpath
+mkdir C:\temp
+Get-process | Out-File "C:\temp\MyOutputFile.txt"
