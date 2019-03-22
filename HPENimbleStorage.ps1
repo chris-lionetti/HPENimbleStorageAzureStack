@@ -1,1 +1,2 @@
-Add-WindowsFeature -name "Multipath-IO"
+$UserPath = "%UserProfile%\Desktop\outputfile.txt"
+Get-process | Out-File $Userpath
