@@ -23,14 +23,42 @@ Add-Type $certCallback
 }
 [ServerCertificateValidationCallback]::Ignore()
 
+function PostEvent([String]$TextField, [string]$EventType)
+{   # Subroutine to Post Events to Log/Screen/EventLog
+    $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log" 
+    if (! (test-path $outfile))
+        {   $suppress = mkdir c:\NimbleStorage
+            $suppress = mkdir c:\NimbleStorage\Logs
+        }
+    if (! (test-path HKLM:\SYSTEM\CurrentControlSet\Services\Eventlog\application\NimbleStorage) )
+        {   New-Eventlog -LogName Application -source NimbleStorage
+            PostEvent "Creating Eventlog\Application\NimbleStorage Eventlog Source" "Warning"
+        } else
+        {   switch -wildcard ($Eventtype)
+                {   "Info*"     { $color="gray" }
+                    "Warn*"     { $color="green" }
+                    "Err*"      { $color="yellow" }
+                    "Cri*"      { $color="red"
+                                  $EventType="Error" }
+                    default     { $color="gray" }
+                }
+            if (!(!($verbose) -and ($EventType -eq "Information")))
+                {   write-host "- "$textfield -foregroundcolor $color
+                    Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
+                    $testfield | out-file -filepath $outfile -append
+                }
+        }
+} 
+
 $uri='https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/HPENimbleStorage.ps1'
 $ForceReboot=$False
 $DidSomething=$False
 # Step 0 If Nimble PSTK not downloaded download it
 if ( Test-Path 'C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit' -PathType Container )
-    {   write-host "The HPE NimbleStorage PowerShell Toolkit is installed"
+    {   PostEvent "The HPE NimbleStorage PowerShell Toolkit is installed" "Information"
     } else 
-    {   $DidSomething=$True
+    {   PostEvent "Now Installing the Nimble PowerShell Toolkit" "Warning"
+        $DidSomething=$True
         $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'
         invoke-webrequest -uri $uri -outfile "C:\temp\HPENimblePowerShellToolkit.210.zip"
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
@@ -41,16 +69,16 @@ if ( Test-Path 'C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowe
 
 # Step 1 Detect if MPIO is installed
 if( (get-WindowsFeature -name "Multipath-io").installed )
-    {   write-host "MPIO is installed"
+    {   PostEvent "The Windows Multipath IO Feature is already Insatlled" "Information"
         if ( (get-windowsFeature -name "Multipath-io").InstallState -ne "Installed")
-            {   write-host "Reboot is required"
+            {   PostEvent "Reboot is required after a Windows Multipath IO Feature Installation" "Warning"
                 $ForceReboot=$True
             }
     } else 
     {  # Step 1a Install MPIO if not installed
         add-WindowsFeature -name "Multipath-io"
-        write-host "Initiated a installation of the Windows Multipath-io feature. "
-        write-host "This server will need to reboot before it is complete"
+        PostEvent "The Windows Multipath IO Feature is not installed, Installing Now!" "Warning"
+        PostEvent "Reboot is required after a Windows Multipath IO Feature Installation" "Warning"
         $ForceReboot=$True
         $DidSomething=$True
     }
@@ -59,13 +87,13 @@ if ( -not $ForceReboot )
 {   $software="Nimble Windows Toolkit"
     $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $software }) -ne $null
     if ($installed)
-    {   write-host 'Nimble Windows Toolkit has been installed'
+    {   PostEvent "The Nimble Windows Toolkit is already installed" "Information"
     } else
     {   # Step 2a If NWT not installed, silent install it
         $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
         invoke-webrequest -uri $uri -outfile "C:\temp\Setup-NimbleNWT-x64.5.0.0.7991.exe"
         Invoke-Command -ScriptBlock "C:\temp\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
-        write-host "Did a silent install of the Nimble Windows Toolkit"
+        PostEvent "Initiating download and Silent Installation of the Nimble Windows Toolkit" "Warning"
         $DidSomething=$True
         $ForceReboot=$True
     }
@@ -73,10 +101,8 @@ if ( -not $ForceReboot )
 if ($DidSomething -or $ForceReboot)
     {   $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
         set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\temp\NimbleStorageUnattended.ps1')
-        write-host "Set the script to run on the next reboot"
-        write-host "PLease Reboot the server"
+        PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
     } else 
-    {   write-host "No actions were needed and reboot not needed"
-        write-host "Script NOT set to rerun on next boot."
-    
+    {   PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
+        PostEvent "This script will not be re-run on reboot" "warning"        
     }
