@@ -96,7 +96,14 @@ if ( -not $ForceReboot )
     {   # Step 2a If NWT not installed, silent install it
         $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
         invoke-webrequest -uri $uri -outfile "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
-        Invoke-Command -ScriptBlock "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
+        $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe"
+        $NWTArg1 = "EULAACCEPTED=Yes"
+        $NWTArg2 = "HOTFIXPASS=Yes"
+        $NWTArg3 = "RebootYesNo=Yes"
+        $NWTArg4 = "NIMBLEVSSPORT=Yes"
+        $NWTArg5 = "/silent"
+        & $NWTEXE $NWTArg1 $NWTArg2 $NWTArg3 $NWTArg4 $NWTArg5
+        # Invoke-Command -ScriptBlock "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
         PostEvent "Initiating download and Silent Installation of the Nimble Windows Toolkit" "Warning"
         $DidSomething=$True
         $ForceReboot=$True
