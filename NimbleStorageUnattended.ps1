@@ -59,9 +59,9 @@ if ( Test-Path 'C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowe
     {   PostEvent "Now Installing the Nimble PowerShell Toolkit" "Warning"
         $DidSomething=$True
         $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'
-        invoke-webrequest -uri $uri -outfile "C:\temp\HPENimblePowerShellToolkit.210.zip"
+        invoke-webrequest -uri $uri -outfile "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip"
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-        expand-archive -path "C:\temp\HPENimblePowerShellToolkit.210.zip" -DestinationPath $PSMPath
+        expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $PSMPath
     }
 
 # step 0b Use secrets to discover array and log into array 
@@ -96,7 +96,7 @@ if ( -not $ForceReboot )
     {   # Step 2a If NWT not installed, silent install it
         $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
         invoke-webrequest -uri $uri -outfile "C:\temp\Setup-NimbleNWT-x64.5.0.0.7991.exe"
-        Invoke-Command -ScriptBlock "C:\temp\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
+        Invoke-Command -ScriptBlock "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
         PostEvent "Initiating download and Silent Installation of the Nimble Windows Toolkit" "Warning"
         $DidSomething=$True
         $ForceReboot=$True
@@ -104,7 +104,7 @@ if ( -not $ForceReboot )
 }
 if ($DidSomething -or $ForceReboot)
     {   $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\temp\NimbleStorageUnattended.ps1')
+        # set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')
         PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
     } else 
     {   PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
