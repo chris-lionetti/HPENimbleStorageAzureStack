@@ -42,17 +42,16 @@ function PostEvent([String]$TextField, [string]$EventType)
                                   $EventType="Error" }
                     default     { $color="gray" }
                 }
-            if (!(!($verbose) -and ($EventType -eq "Information")))
-                {   write-host "- "$textfield -foregroundcolor $color
-                    Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
-                    $testfield | out-file -filepath $outfile -append
-                }
+            write-host "- "$textfield -foregroundcolor $color
+            Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
+            $testfield | out-file -filepath $outfile -append
         }
 } 
 
 $uri='https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/HPENimbleStorage.ps1'
 $ForceReboot=$False
 $DidSomething=$False
+
 # Step 0 If Nimble PSTK not downloaded download it
 if ( Test-Path 'C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit' -PathType Container )
     {   PostEvent "The HPE NimbleStorage PowerShell Toolkit is installed" "Information"
@@ -66,6 +65,11 @@ if ( Test-Path 'C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowe
     }
 
 # step 0b Use secrets to discover array and log into array 
+
+# Ensure that iSCSI is started;
+Start-Service msiscsi
+Set-Service msiscsi -startuptype "automatic"
+PostEvent "Ensuring that the iSCSI Initiator Service is started, and setting it to start automatically" "Warning"
 
 # Step 1 Detect if MPIO is installed
 if( (get-WindowsFeature -name "Multipath-io").installed )
