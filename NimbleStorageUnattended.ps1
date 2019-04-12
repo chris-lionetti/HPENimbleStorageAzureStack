@@ -46,20 +46,21 @@ function PostEvent([String]$TextField, [string]$EventType)
                 }
             write-host "- "$textfield -foregroundcolor $color
             Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
-            $testfield | out-file -filepath $outfile -append
+            $TextField | out-file -filepath $outfile -append
         }
 } 
 function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
     if (-not (Get-Module -name AzureRM.Storage) )
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
+        Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
         Import-Module -Name PowerShellGet
         Import-Module -Name PackageManagement  
-        Register-PsRepository -Default -confirm:$false
-        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force -confirm:$false
-        register-psrepository -default
-        install-module AzureRM -RequiredVersion 2.4.0 -Force
-        Install-Module -name AzureStack -RequiredVersion 1.7.1 -Force
+        Register-PsRepository -Default -ErrorAction SilentlyContinue
+        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201
+        register-psrepository -default -ErrorAction SilentlyContinue
+        install-module AzureRM -RequiredVersion 2.4.0
+        Install-Module -name AzureStack -RequiredVersion 1.7.1
         # Install the Azure.Storage module version 4.5.0
         Install-Module -Name Azure.Storage -RequiredVersion 4.5.0 -Force -AllowClobber
 
