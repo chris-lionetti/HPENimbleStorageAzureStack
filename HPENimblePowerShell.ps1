@@ -25,8 +25,8 @@ Add-Type $certCallback
 [ServerCertificateValidationCallback]::Ignore()
 $uri="https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/NimbleStorageUnattended.ps1"
 $Code=(Invoke-WebRequest -Uri $uri -Method Get).content
-mkdir C:\NimbleStorage
-$Code | out-file -FilePath "C:\NimbleStorage\NimbleStorageUnAttended.ps1"
+mkdir C:\NimbleStorage -ErrorAction SilentlyContinue
+$Code | out-file -FilePath "C:\NimbleStorage\NimbleStorageUnAttended.ps1" -ErrorAction SilentlyContinue
 
 $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
 # set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')

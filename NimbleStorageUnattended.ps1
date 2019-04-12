@@ -29,8 +29,8 @@ function PostEvent([String]$TextField, [string]$EventType)
 {   # Subroutine to Post Events to Log/Screen/EventLog
     $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log" 
     if (! (test-path $outfile))
-        {   $suppress = mkdir c:\NimbleStorage
-            $suppress = mkdir c:\NimbleStorage\Logs
+        {   mkdir c:\NimbleStorage -erroraction SilentlyContinue
+            mkdir c:\NimbleStorage\Logs -erroraction SilentlyContinue
         }
     if (! (test-path HKLM:\SYSTEM\CurrentControlSet\Services\Eventlog\application\NimbleStorage) )
         {   New-Eventlog -LogName Application -source NimbleStorage
@@ -52,11 +52,11 @@ function PostEvent([String]$TextField, [string]$EventType)
 function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
     if (-not (Get-Module -name AzureRM.Storage) )
-    {   post-event "The required AzureStack Powershell are being Installed" "Info"
+    {   postevent "The required AzureStack Powershell are being Installed" "Info"
         Import-Module -Name PowerShellGet
         Import-Module -Name PackageManagement  
-        Register-PsRepository -Default
-        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force
+        Register-PsRepository -Default -confirm:$false
+        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force -confirm:$false
         register-psrepository -default
         install-module AzureRM -RequiredVersion 2.4.0 -Force
         Install-Module -name AzureStack -RequiredVersion 1.7.1 -Force
@@ -73,7 +73,7 @@ function Load-NSASAzureModules
         Import-Module -Name Azure.Storage -RequiredVersion 4.5.0
         Import-Module -Name AzureRM.Storage -RequiredVersion 5.0.4
     } else 
-    {   post-event "The required AzureStack Powershell Modules have been detected" "Info"        
+    {   postevent "The required AzureStack Powershell Modules have been detected" "Info"        
     }
 }
 function Load-NimblePSTKModules
@@ -98,7 +98,7 @@ function Load-WindowsMPIOFeature
                 $ForceReboot=$True
                 return $True
             } else 
-            {   post-event "The Windows Multipath IO Feature does not require a reboot" "Information"
+            {   postevent "The Windows Multipath IO Feature does not require a reboot" "Information"
                 return $false                
             }
     } else 
