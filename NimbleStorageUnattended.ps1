@@ -115,15 +115,14 @@ function Load-WindowsMPIOFeature
 function Load-NWTPackage
 {   # Download and instlal the Nimble Windows Toolkit. If already installed, return false, otherwise install and request a reboot.
     $NWTsoftware="Nimble Windows Toolkit"
-    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $software }) -ne $null
+    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
     if ($installed)
     {   PostEvent "The Nimble Windows Toolkit is already installed" "Information"
         return $false
     } else
     {   # If NWT not installed, silent install it
-        $uri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
-        invoke-webrequest -uri $uri -outfile "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
-        $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe"
+        invoke-webrequest -uri $NWTuri -outfile "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
+        $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
         $NWTArg1 = "EULAACCEPTED=Yes"
         $NWTArg2 = "HOTFIXPASS=Yes"
         $NWTArg3 = "RebootYesNo=Yes"
@@ -140,12 +139,18 @@ function Load-NWTPackage
 # MAIN Unattended Installation Script for Nimble Storag on Azure Stack.                                                                             #
 #####################################################################################################################################################
 # Set the Global Variables needed for the script to operate
-    $uri='https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/HPENimbleStorage.ps1'
+    # $InitialPulluri='https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/HPENimbleStorage.ps1'
+    
+    $NWTuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
+    
     $NimblePSTKuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'
+        
     $WindowsPowerShellModulePath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-    $ForceReboot=$False
+    
     $NimbleArrayIP="10.1.240.20"
+    
     $NimbleUser="admin"
+    
     $NimblePassword="admin"
 
 # Step 1. Load the Azure Stack Specific PowerShell modules
@@ -155,9 +160,7 @@ function Load-NWTPackage
 # Step 3. Download and install the Nimble PowerShell Toolkit
     Load-NimblePSTKModules
 # step 3b. TODO: Use secrets to discover array and log into array 
-    $NimbleArrayIP="10.1.240.20"
-    $NimbleUser="admin"
-    $NimblePassword="admin"
+
 # Step 4. Ensure that iSCSI is started;
     Start-Service msiscsi
     Set-Service msiscsi -startuptype "automatic"
