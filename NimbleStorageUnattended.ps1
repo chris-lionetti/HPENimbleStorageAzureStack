@@ -26,7 +26,8 @@ function Set-NSASSecurityProtocolOverride
     [ServerCertificateValidationCallback]::Ignore()
 }
 function SetupLogEvents([String] $action )
-{   if ( $action -like "StartLog")
+{   # Valid options for hte action are either "StartLog" or "EndLog"
+    if ( $action -like "StartLog")
         {   # Create the location for the log file
             if (! (test-path $outfile))
                 {   mkdir c:\NimbleStorage -erroraction SilentlyContinue
@@ -62,7 +63,7 @@ function PostEvent([String]$TextField, [string]$EventType)
 } 
 function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
-    if (-not (import-Module -name AzureRM.Storage) )
+    if (-not (import-Module -name AzureRM.Storage -ErrorAction SilentlyContinue) )
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
         Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
             postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
@@ -166,6 +167,9 @@ function Load-NWTPackage
     $NimbleUser="admin"
     $NimblePassword="admin"
     $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log"
+    $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    $ScriptLocation='C:\NimbleStorage\NimbleStorageUnattended.ps1'
+    $RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1 '+ $ScriptLocation
     
 # Step 0. Lets Add a Header to the Log File
     SetupLogEvents Startlog
@@ -188,8 +192,6 @@ function Load-NWTPackage
         {   $ForceReboot=Load-NWTPackage
         }
 # Step 7. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
-        $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        $RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1'
         if ($ForceReboot)
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
@@ -200,4 +202,3 @@ function Load-NWTPackage
         }
 # Step 8. Adding a End Strip to the Log file
     SetupLogEvents Endlog
-
