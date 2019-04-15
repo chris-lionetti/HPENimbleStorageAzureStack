@@ -189,7 +189,8 @@ function Load-NWTPackage
         }
 # Step 7. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
         $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-        $RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1'if ($ForceReboot)
+        $RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1'
+        if ($ForceReboot)
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
         } else 
