@@ -25,33 +25,44 @@ function Set-NSASSecurityProtocolOverride
     }
     [ServerCertificateValidationCallback]::Ignore()
 }
+function SetupLogEvents([String] $action )
+{   if ( $action -like "StartLog")
+        {   # Create the location for the log file
+            if (! (test-path $outfile))
+                {   mkdir c:\NimbleStorage -erroraction SilentlyContinue
+                    mkdir c:\NimbleStorage\Logs -erroraction SilentlyContinue
+                }
+            # This banner makes it easier to parse the log file later quickly.
+            "##########################################################" | out-file -filepath $outfile -append
+            "################### Starting New Run #####################" | out-file -filepath $outfile -append
+            if (! (test-path HKLM:\SYSTEM\CurrentControlSet\Services\Eventlog\application\NimbleStorage) )
+                {   # if the eventlog catagory doesnt exist, need to register it
+                    New-Eventlog -LogName Application -source NimbleStorage
+                    PostEvent "Creating Eventlog\Application\NimbleStorage Eventlog Source" "Warning"
+                }
+        }
+    if ( $action -like "EndLog")
+        {   "################### Ending Run #####################" | out-file -filepath $outfile -append
+            "####################################################" | out-file -filepath $outfile -append
+        }
+}
 function PostEvent([String]$TextField, [string]$EventType)
 {   # Subroutine to Post Events to Log/Screen/EventLog
-    $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log" 
-    if (! (test-path $outfile))
-        {   mkdir c:\NimbleStorage -erroraction SilentlyContinue
-            mkdir c:\NimbleStorage\Logs -erroraction SilentlyContinue
+    switch -wildcard ($Eventtype)
+        {   "Info*"     { $color="gray" }
+            "Warn*"     { $color="green" }
+            "Err*"      { $color="yellow" }
+            "Cri*"      { $color="red"
+                          $EventType="Error" }
+            default     { $color="gray" }
         }
-    if (! (test-path HKLM:\SYSTEM\CurrentControlSet\Services\Eventlog\application\NimbleStorage) )
-        {   New-Eventlog -LogName Application -source NimbleStorage
-            PostEvent "Creating Eventlog\Application\NimbleStorage Eventlog Source" "Warning"
-        } else
-        {   switch -wildcard ($Eventtype)
-                {   "Info*"     { $color="gray" }
-                    "Warn*"     { $color="green" }
-                    "Err*"      { $color="yellow" }
-                    "Cri*"      { $color="red"
-                                  $EventType="Error" }
-                    default     { $color="gray" }
-                }
-            write-host "- "$textfield -foregroundcolor $color
-            Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
-            $TextField | out-file -filepath $outfile -append
-        }
+    write-host "- "$textfield -foregroundcolor $color
+    Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $TextField -EntryType $EventType -Computername "." -category 0
+    $TextField | out-file -filepath $outfile -append
 } 
 function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
-    if (-not (Get-Module -name AzureRM.Storage) )
+    if (-not (import-Module -name AzureRM.Storage) )
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
         Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
             postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
@@ -147,20 +158,17 @@ function Load-NWTPackage
 # MAIN Unattended Installation Script for Nimble Storag on Azure Stack.                                                                             #
 #####################################################################################################################################################
 # Set the Global Variables needed for the script to operate
-    # $InitialPulluri='https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/HPENimbleStorage.ps1'
     
     $NWTuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
-    
-    $NimblePSTKuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'
-        
+    $NimblePSTKuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'   
     $WindowsPowerShellModulePath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-    
     $NimbleArrayIP="10.1.240.20"
-    
     $NimbleUser="admin"
-    
     $NimblePassword="admin"
-
+    $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log"
+    
+# Step 0. Lets Add a Header to the Log File
+    SetupLogEvent Startlog
 # Step 1. Load the Azure Stack Specific PowerShell modules
     Load-NSASAzureModules 
 # Step 2. All all Invoke-Web* commands to operate without a certificate. 
@@ -180,11 +188,15 @@ function Load-NWTPackage
         {   $ForceReboot=Load-NWTPackage
         }
 # Step 7. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
-    if ($ForceReboot)
-        {   $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-            #set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')
+        $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+        $RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1'if ($ForceReboot)
+        {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
         } else 
-        {   PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
+        {   remove-itemproperty $RunOnce "NextRun"
+            PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
             PostEvent "This script will NOT be re-run on reboot" "warning"        
         }
+# Step 8. Adding a End Strip to the Log file
+    SetupLogEvent Endlog
+
