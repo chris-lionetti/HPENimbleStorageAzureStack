@@ -168,7 +168,7 @@ function Load-NWTPackage
     $outfile = "C:\NimbleStorage\Logs\NimbleInstall.log"
     
 # Step 0. Lets Add a Header to the Log File
-    SetupLogEvent Startlog
+    SetupLogEvents Startlog
 # Step 1. Load the Azure Stack Specific PowerShell modules
     Load-NSASAzureModules 
 # Step 2. All all Invoke-Web* commands to operate without a certificate. 
@@ -199,5 +199,5 @@ function Load-NWTPackage
             PostEvent "This script will NOT be re-run on reboot" "warning"        
         }
 # Step 8. Adding a End Strip to the Log file
-    SetupLogEvent Endlog
+    SetupLogEvents Endlog
 
