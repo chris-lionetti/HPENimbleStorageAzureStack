@@ -54,25 +54,35 @@ function Load-NSASAzureModules
     if (-not (Get-Module -name AzureRM.Storage) )
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
         Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
+            postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
         Import-Module -Name PowerShellGet
-        Import-Module -Name PackageManagement  
+            postevent "Import-Module -Name PowerShellGet" "Info"
+        Set-PSRepository -name "PSGallery" -InstallationPolicy TrustedImport-Module -Name PackageManagement  
+            postevent "Set-PSRepository -name PSGallery -InstallationPolicy TrustedImport-Module -Name PackageManagement" "Info"
         Register-PsRepository -Default -ErrorAction SilentlyContinue
+            postevent "Register-PsRepository -Default -ErrorAction SilentlyContinue" "Info"
         Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201
+            postevent "Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201" "Info"
         register-psrepository -default -ErrorAction SilentlyContinue
+            postevent "register-psrepository -default -ErrorAction SilentlyContinue" "Info"
         install-module AzureRM -RequiredVersion 2.4.0
+            postevent "install-module AzureRM -RequiredVersion 2.4.0" "Info"
         Install-Module -name AzureStack -RequiredVersion 1.7.1
+            postevent "Install-Module -name AzureStack -RequiredVersion 1.7.1" "Info"
         # Install the Azure.Storage module version 4.5.0
         Install-Module -Name Azure.Storage -RequiredVersion 4.5.0 -Force -AllowClobber
-
+            postevent "Install-Module -Name Azure.Storage -RequiredVersion 4.5.0 -Force -AllowClobber" "Info"
         # Install the AzureRm.Storage module version 5.0.4
         Install-Module -Name AzureRM.Storage -RequiredVersion 5.0.4 -Force -AllowClobber
-
+            postevent "Install-Module -Name AzureRM.Storage -RequiredVersion 5.0.4 -Force -AllowClobber" "Info"
         # Remove incompatible storage module installed by AzureRM.Storage
         Uninstall-Module Azure.Storage -RequiredVersion 4.6.1 -Force
-
+            postevent "Uninstall-Module Azure.Storage -RequiredVersion 4.6.1 -Force" "Info"
         # Load the modules explicitly specifying the versions
         Import-Module -Name Azure.Storage -RequiredVersion 4.5.0
+            postevent "Import-Module -Name Azure.Storage -RequiredVersion 4.5.0" "Info"
         Import-Module -Name AzureRM.Storage -RequiredVersion 5.0.4
+            postevent "Import-Module -Name AzureRM.Storage -RequiredVersion 5.0.4" "Info"
     } else 
     {   postevent "The required AzureStack Powershell Modules have been detected" "Info"        
     }

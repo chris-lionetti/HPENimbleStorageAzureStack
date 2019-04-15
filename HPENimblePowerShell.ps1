@@ -29,4 +29,4 @@ mkdir C:\NimbleStorage -ErrorAction SilentlyContinue
 $Code | out-file -FilePath "C:\NimbleStorage\NimbleStorageUnAttended.ps1" -ErrorAction SilentlyContinue
 
 $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-# set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')
+set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')
