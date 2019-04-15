@@ -67,14 +67,14 @@ function Load-NSASAzureModules
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
         Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
             postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
+        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force
+            postevent "Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201" "Info"
         Import-Module -Name PowerShellGet
             postevent "Import-Module -Name PowerShellGet" "Info"
         Set-PSRepository -name "PSGallery" -InstallationPolicy TrustedImport-Module -Name PackageManagement  
             postevent "Set-PSRepository -name PSGallery -InstallationPolicy TrustedImport-Module -Name PackageManagement" "Info"
         Register-PsRepository -Default -ErrorAction SilentlyContinue
             postevent "Register-PsRepository -Default -ErrorAction SilentlyContinue" "Info"
-        Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201
-            postevent "Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201" "Info"
         register-psrepository -default -ErrorAction SilentlyContinue
             postevent "register-psrepository -default -ErrorAction SilentlyContinue" "Info"
         install-module AzureRM -RequiredVersion 2.4.0
