@@ -65,13 +65,15 @@ function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
     if (-not (import-Module -name AzureRM.Storage -ErrorAction SilentlyContinue) )
     {   postevent "The required AzureStack Powershell are being Installed" "Info"
-        Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
-            postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
         Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force
             postevent "Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201" "Info"
+        Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
+            postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "Info"
         Import-Module -Name PowerShellGet
             postevent "Import-Module -Name PowerShellGet" "Info"
-        Set-PSRepository -name "PSGallery" -InstallationPolicy TrustedImport-Module -Name PackageManagement  
+        Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
+            postevent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "info"
+        Import-Module -Name PackageManagement  
             postevent "Set-PSRepository -name PSGallery -InstallationPolicy TrustedImport-Module -Name PackageManagement" "Info"
         Register-PsRepository -Default -ErrorAction SilentlyContinue
             postevent "Register-PsRepository -Default -ErrorAction SilentlyContinue" "Info"
@@ -109,7 +111,6 @@ function Load-NimblePSTKModules
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
         expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $WindowsPowerShellModulePath
     }
-
 }
 function Load-WindowsMPIOFeature
 {   # Load the Windows MPIO feature. Returns True if a Reboot is required.
