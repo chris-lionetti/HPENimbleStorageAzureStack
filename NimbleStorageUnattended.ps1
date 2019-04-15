@@ -93,7 +93,6 @@ function Load-NimblePSTKModules
     {   PostEvent "The HPE NimbleStorage PowerShell Toolkit is installed" "Information"
     } else 
     {   PostEvent "Now Installing the Nimble PowerShell Toolkit" "Warning"
-        $DidSomething=$True
         invoke-webrequest -uri $NimblePSTKuri -outfile "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip"
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
         expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $WindowsPowerShellModulePath
@@ -118,7 +117,6 @@ function Load-WindowsMPIOFeature
         PostEvent "The Windows Multipath IO Feature is not installed, Installing Now!" "Warning"
         PostEvent "Reboot is required after a Windows Multipath IO Feature Installation" "Warning"
         $ForceReboot=$True
-        $DidSomething=$True
         return $true
     }
 }
