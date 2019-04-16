@@ -165,7 +165,9 @@ function ConfigureiSCSI
     $MyLocalIQN=(Get-InitiatorPort | where-object {$_.ConnectionType -like "iSCSI"} ).nodeaddress
 
     $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
+    PostEvent $MyNimUsername+" is the Useranme" "Info"
     $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
+    PostEvent $MyNimPassword+" is the Password" "Info"
     $NimblePasswordObect= ConvertTo-SecureString $MyNimPassword -AsPlainText -force
     $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
 
@@ -199,11 +201,11 @@ function StoreCreds
         }   
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name UserName -ErrorAction SilentlyContinue) )
         {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name UserName -Value $NimbleUser -ErrorAction SilentlyContinue
-            PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+            PostEvent "Storing credential under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         }    
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name Password -ErrorAction SilentlyContinue) )
         {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name Password -Value $NimblePassword -ErrorAction SilentlyContinue
-            PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+            PostEvent "Storing credential under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         } 
     PostEvent "To obtain username use Username= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
     PostEvent "To obtain password use Password= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password" "Info"
