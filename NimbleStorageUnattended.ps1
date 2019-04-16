@@ -168,21 +168,22 @@ function ConfigureiSCSI
     PostEvent $MyNimUsername+" is the Useranme" "Info"
     $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
     PostEvent $MyNimPassword+" is the Password" "Info"
-    $NimblePasswordObect= ConvertTo-SecureString $MyNimPassword -AsPlainText -force
+    $NimblePasswordObect = ConvertTo-SecureString $MyNimPassword -AsPlainText -force
     $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
 
     Import-Module HPENimblePowerShellToolkit
-    Connect-NSGroup -Group $NimbleArrayIP -Credential $NimbleCredOject -IgnoreServerCertificate
+    Connect-NSGroup -Group $NimbleArrayIP -Credential $NimbleCredObject -IgnoreServerCertificate
     if (Get-NSDisk)
     {   PostEvent "Was able to Successfully Connect to the array using the supplied Credentials" "Info"
         if (-not (Get-NSInitiatorGroup -name (hostname) ) )
-            {   $NSIGID=New-NSInitiatorgroup -name (hostname) -description "Automatically Created using Scripts" -access_protocol "iSCSI"
+            {   $NSIGID=New-NSInitiatorgroup -name (hostname) -description "Automatically Created using Scripts" -access_protocol "iscsi"
                 PostEvent "Created new Initiator Group for this host" "Info"
-                New-NSInitiator -initiator_group_id $NSIGID -access_protocol "iSCSI" -iqn $MyLocalIQN
-                PostEvent "Created new Initiator for this Initiator Group" "Info"
             } else 
             {   PostEvent "Initiator Group already found for this hostname"
             }
+        $NSIGID=(Get-NSInitiatorGroup -name (hostname) ).id
+        New-NSInitiator -initiator_group_id $NSIGID -access_protocol "iscsi" -iqn $MyLocalIQN -label "AutoCreated"
+        PostEvent "Created new Initiator for this Initiator Group" "Info"
     } else
     {   PostEvent "Was Unable to connect to the Nimble Array using the Supplied Credentials" "Error"
     }
