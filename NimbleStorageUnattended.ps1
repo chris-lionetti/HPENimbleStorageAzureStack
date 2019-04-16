@@ -198,11 +198,11 @@ function StoreCreds
             PostEvent "Creating Registry Key to store credentials at HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         }   
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name UserName -ErrorAction SilentlyContinue) )
-        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name UserName -Value $NimbleUser
+        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name UserName -Value $NimbleUser -ErrorAction SilentlyContinue
             PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         }    
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name Password -ErrorAction SilentlyContinue) )
-        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name Password -Value $NimblePassword
+        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name Password -Value $NimblePassword -ErrorAction SilentlyContinue
             PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         } 
     PostEvent "To obtain username use Username= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
