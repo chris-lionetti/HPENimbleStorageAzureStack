@@ -164,8 +164,8 @@ function ConfigureiSCSI
     new-iSCSITargetPortal -TargetPortalAddress $NimbleArrayIP
     $MyLocalIQN=(Get-InitiatorPort | where-object {$_.ConnectionType -like "iSCSI"} ).nodeaddress
 
-    $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName
-    $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password
+    $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
+    $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
     $NimblePasswordObect= ConvertTo-SecureString $MyNimPassword -AsPlainText -force
     $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
 
