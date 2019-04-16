@@ -156,6 +156,58 @@ function Load-NWTPackage
     }
 }
 
+function ConfigureiSCSI
+{   Start-Service msiscsi
+    Set-Service msiscsi -startuptype "automatic"
+    PostEvent "Ensuring that the iSCSI Initiator Service is started, and setting it to start automatically" "Warning"
+    
+    new-iSCSITargetPortal -TargetPortalAddress $NimbleArrayIP
+    $MyLocalIQN=(Get-InitiatorPort | where-object {$_.ConnectionType -like "iSCSI"} ).nodeaddress
+
+    $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName
+    $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password
+    $NimblePasswordObect= ConvertTo-SecureString $MyNimPassword -AsPlainText -force
+    $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
+
+    Import-Module HPENimblePowerShellToolkit
+    Connect-NSGroup -Group $NimbleArrayIP -Credential $NimbleCredOject -IgnoreServerCertificate
+    if (Get-NSDisk)
+    {   PostEvent "Was able to Successfully Connect to the array using the supplied Credentials" "Info"
+        if (-not (Get-NSInitiatorGroup -name (hostname) ) )
+            {   $NSIGID=New-NSInitiatorgroup -name (hostname) -description "Automatically Created using Scripts" -access_protocol "iSCSI"
+                PostEvent "Created new Initiator Group for this host" "Info"
+                New-NSInitiator -initiator_group_id $NSIGID -access_protocol "iSCSI" -iqn $MyLocalIQN
+                PostEvent "Created new Initiator for this Initiator Group" "Info"
+            } else 
+            {   PostEvent "Initiator Group already found for this hostname"
+            }
+    } else
+    {   PostEvent "Was Unable to connect to the Nimble Array using the Supplied Credentials" "Error"
+    }
+}
+
+function StoreCreds
+{   # Create the Registry Entries where the Credentials can be stored. Only available to 'this user'
+    If (!(Test-Path "HKCU:\Software\NimbleStorage\Credentials" -ErrorAction SilentlyContinue))
+        {   Write-Host -ForegroundColor Red "Credentials Path Not Found."
+            New-Item -Path "HKCU:\Software\NimbleStorage" -Name "Credentials" -Force
+            PostEvent "Creating Registry Key to store credentials at HKCU:\Software\NimbleStorage\Credentials" "Info"
+        }
+    if (! Test-Path "HKCU:\Software\NimbleStorage\Credentials\DefaultCred")
+        {   New-Item -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred
+            PostEvent "Creating Registry Key to store credentials at HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+        }   
+    if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name UserName -ErrorAction SilentlyContinue) )
+        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name UserName -Value $NimbleUser
+            PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+        }    
+    if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name Password -ErrorAction SilentlyContinue) )
+        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name Password -Value $NimblePassword
+            PostEvent "Storing credential '$NumbleUser' under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+        } 
+    PostEvent "To obtain username use Username= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
+    PostEvent "To obtain password use Password= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password" "Info"
+}
 #####################################################################################################################################################
 # MAIN Unattended Installation Script for Nimble Storag on Azure Stack.                                                                             #
 #####################################################################################################################################################
@@ -180,19 +232,19 @@ function Load-NWTPackage
     Set-NSASSecurityProtocolOverride
 # Step 3. Download and install the Nimble PowerShell Toolkit
     Load-NimblePSTKModules
-# step 3b. TODO: Use secrets to discover array and log into array 
+# Step 4. Store the Credentials to the array for future automation.
+    StoreCreds
+# step 5. TODO: Use secrets to discover array and log into array 
 
-# Step 4. Ensure that iSCSI is started;
-    Start-Service msiscsi
-    Set-Service msiscsi -startuptype "automatic"
-    PostEvent "Ensuring that the iSCSI Initiator Service is started, and setting it to start automatically" "Warning"
-# Step 5. Detect if MPIO is installed. If it needs reboot, set the flag as the return
+# Step 6. Ensure that iSCSI is started; 
+    ConfigureiSCSI
+# Step 7. Detect if MPIO is installed. If it needs reboot, set the flag as the return
     $ForceReboot=Load-WindowsMPIOFeature
-# Step 6. If NWT not downloaded, download it. If it is downloaded and installed require reboot, otherwise to do not set reboot flag
+# Step 8. If NWT not downloaded, download it. If it is downloaded and installed require reboot, otherwise to do not set reboot flag
     if (-not $ForceReboot) 
         {   $ForceReboot=Load-NWTPackage
         }
-# Step 7. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
+# Step 9. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
         if ($ForceReboot)
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
@@ -201,5 +253,5 @@ function Load-NWTPackage
             PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
             PostEvent "This script will NOT be re-run on reboot" "warning"        
         }
-# Step 8. Adding a End Strip to the Log file
+# Step A. Adding a End Strip to the Log file
     SetupLogEvents Endlog
