@@ -188,12 +188,12 @@ function ConfigureiSCSI
 
 function StoreCreds
 {   # Create the Registry Entries where the Credentials can be stored. Only available to 'this user'
-    If (!(Test-Path "HKCU:\Software\NimbleStorage\Credentials" -ErrorAction SilentlyContinue))
+    If (! (Test-Path "HKCU:\Software\NimbleStorage\Credentials" -ErrorAction SilentlyContinue) )
         {   Write-Host -ForegroundColor Red "Credentials Path Not Found."
             New-Item -Path "HKCU:\Software\NimbleStorage" -Name "Credentials" -Force
             PostEvent "Creating Registry Key to store credentials at HKCU:\Software\NimbleStorage\Credentials" "Info"
         }
-    if (! Test-Path "HKCU:\Software\NimbleStorage\Credentials\DefaultCred")
+    if (! (Test-Path "HKCU:\Software\NimbleStorage\Credentials\DefaultCred") )
         {   New-Item -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred
             PostEvent "Creating Registry Key to store credentials at HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         }   
