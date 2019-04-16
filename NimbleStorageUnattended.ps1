@@ -176,14 +176,19 @@ function ConfigureiSCSI
     if (Get-NSDisk)
     {   PostEvent "Was able to Successfully Connect to the array using the supplied Credentials" "Info"
         if (-not (Get-NSInitiatorGroup -name (hostname) ) )
-            {   $NSIGID=New-NSInitiatorgroup -name (hostname) -description "Automatically Created using Scripts" -access_protocol "iscsi"
+            {   New-NSInitiatorgroup -name (hostname) -description "Automatically Created using Scripts" -access_protocol "iscsi"
                 PostEvent "Created new Initiator Group for this host" "Info"
             } else 
-            {   PostEvent "Initiator Group already found for this hostname"
+            {   PostEvent "Initiator Group already found for this hostname" "Info"
             }
         $NSIGID=(Get-NSInitiatorGroup -name (hostname) ).id
-        New-NSInitiator -initiator_group_id $NSIGID -access_protocol "iscsi" -iqn $MyLocalIQN -label "AutoCreated"
-        PostEvent "Created new Initiator for this Initiator Group" "Info"
+        $Label = (hostname)+"-Autocreated"
+        if ( -not ( get-NSInitiator -initiator_group_name $NSIGID ) )
+            {   New-NSInitiator -initiator_group_id $NSIGID -access_protocol "iscsi" -iqn $MyLocalIQN -label $Label
+                PostEvent "Created new Initiator for this Initiator Group" "Info"
+            } else 
+            {   PostEvent "Initiator Group already found for this hostname" "Info"
+            }
     } else
     {   PostEvent "Was Unable to connect to the Nimble Array using the Supplied Credentials" "Error"
     }
@@ -252,9 +257,11 @@ function StoreCreds
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             PostEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
         } else 
-        {   remove-itemproperty $RunOnce "NextRun"
+        {   if (Get-ItemProperty -Path $RunOnce) 
+                {   remove-itemproperty $RunOnce "NextRun"
+                    PostEvent "This script will NOT be re-run on reboot" "warning"        
+                }
             PostEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
-            PostEvent "This script will NOT be re-run on reboot" "warning"        
         }
 # Step A. Adding a End Strip to the Log file
     SetupLogEvents Endlog
