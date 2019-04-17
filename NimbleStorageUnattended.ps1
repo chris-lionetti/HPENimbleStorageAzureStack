@@ -106,7 +106,7 @@ function Load-NSASAzureModules
         Set-PSRepository -name "PSGallery" -InstallationPolicy Trusted
             Post-AZNSEvent "Set-PSRepository -name PSGallery -InstallationPolicy Trusted" "info"
         Import-Module -Name PackageManagement  
-            Post-AZNSEvent "Set-PSRepository -name PSGallery -InstallationPolicy TrustedImport-Module -Name PackageManagement" "Info"
+            Post-AZNSEvent "Import-Module -Name PackageManagement" "Info"
         Register-PsRepository -Default -ErrorAction SilentlyContinue
             Post-AZNSEvent "Register-PsRepository -Default -ErrorAction SilentlyContinue" "Info"
         register-psrepository -default -ErrorAction SilentlyContinue
