@@ -53,7 +53,7 @@ function Set-NSASSecurityProtocolOverride
     }
     [ServerCertificateValidationCallback]::Ignore()
 }
-function Setup-ASNSLogEvents([String] $AZNSaction )
+function Setup-ASNSLogEvents([String] $AZNSaction, [String]$AZNSStep )
 {   # Valid options for hte action are either "StartLog" or "EndLog"
     if ( $AZNSaction -like "StartLog")
         {   # Create the location for the log file
@@ -73,6 +73,10 @@ function Setup-ASNSLogEvents([String] $AZNSaction )
     if ( $AZNSaction -like "EndLog")
         {   "################### Ending Run #####################" | out-file -filepath $AZNSoutfile -append
             "####################################################" | out-file -filepath $AZNSoutfile -append
+        }
+    if ( $AZNSAction -like "Step")
+        {   "# Now Executing Step "+$AZNSStep | out-file -filepath $AZNSoutfile -append
+
         }
 }
 function Post-AZNSEvent([String]$AZNSTextField, [string]$AZNSEventType)
@@ -249,29 +253,42 @@ function Store-AZNSCreds
 # Set the Global Variables needed for the script to operate
     
 # Step 1. Lets Add a Header to the Log File
+    Setup-ASNSLogEvents Step 1
     Setup-ASNSLogEvents Startlog
 # Step 2. Load the Azure Stack Specific PowerShell modules
+    Setup-ASNSLogEvents Step 2
     Load-NSASAzureModules 
 # Step 3. All all Invoke-Web* commands to operate without a certificate. 
+    Setup-ASNSLogEvents Step 3
     Set-NSASSecurityProtocolOverride
 # Step 4. Download and install the Nimble PowerShell Toolkit
+    Setup-ASNSLogEvents Step 4
     Load-NimblePSTKModules
 # Step 5. Store the Credentials to the array for future automation.
+    Setup-ASNSLogEvents Step 5
     Store-AZNSCreds
 # Step 6. Ensure that iSCSI is started; 
+    Setup-ASNSLogEvents Step 6
     Configure-AZNSiSCSI
 # Step 7. Configure the Nimble Array to have the correct Initiator Group and Initiator    
+    Setup-ASNSLogEvents Step 7
     Create-AZNSNimbleInitiatorGroups
 # Step 8. Detect if MPIO is installed. If it needs reboot, set the flag as the return
+    Setup-ASNSLogEvents Step 8
     $ForceReboot=Load-WindowsMPIOFeature
 # Step 9. If NWT not downloaded, download it. If it is downloaded and installed require reboot, otherwise to do not set reboot flag
+    Setup-ASNSLogEvents Step 9
     if (-not $ForceReboot) 
         {   $ForceReboot=Load-NWTPackage
         }
 # Step A. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
-        if ($ForceReboot)
+    Setup-ASNSLogEvents Step 10
+    if ($ForceReboot)
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             Post-AZNSEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
+            write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
+            start-sleep -Seconds 60
+            shutdown -t 0 -r -f
         } else 
         {   if (Get-ItemProperty -Path $RunOnce) 
                 {   remove-itemproperty $RunOnce "NextRun"
@@ -280,4 +297,5 @@ function Store-AZNSCreds
             Post-AZNSEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
         }
 # Step B. Adding a End Strip to the Log file
+    Setup-ASNSLogEvents Step 11
     Setup-ASNSLogEvents Endlog      
