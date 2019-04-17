@@ -280,4 +280,4 @@ function Store-AZNSCreds
             Post-AZNSEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
         }
 # Step B. Adding a End Strip to the Log file
-    Setup-AZNSLogEvents Endlog      
+    Setup-ASNSLogEvents Endlog      
