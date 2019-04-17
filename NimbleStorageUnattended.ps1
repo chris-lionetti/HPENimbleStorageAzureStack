@@ -249,7 +249,7 @@ function Store-AZNSCreds
 # Set the Global Variables needed for the script to operate
     
 # Step 1. Lets Add a Header to the Log File
-    Setup-LogEvents Startlog
+    Setup-ASNSLogEvents Startlog
 # Step 2. Load the Azure Stack Specific PowerShell modules
     Load-NSASAzureModules 
 # Step 3. All all Invoke-Web* commands to operate without a certificate. 
