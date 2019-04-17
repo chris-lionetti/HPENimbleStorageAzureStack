@@ -15,16 +15,16 @@
 #################################################################
 
 # Variable Block
-$NWTuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
-$NimblePSTKuri='https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'   
+$NWTuri=            'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
+$NimblePSTKuri=     'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'   
 $WindowsPowerShellModulePath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-$NimbleArrayIP="10.1.240.20"
-$NimbleUser="admin"
-$NimblePassword="admin"
-$AZNSoutfile = "C:\NimbleStorage\Logs\NimbleInstall.log"
-$RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
-$ScriptLocation='C:\NimbleStorage\NimbleStorageUnattended.ps1'
-$RunOnceValue='C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1 '+ $ScriptLocation
+$NimbleArrayIP=     "10.1.240.20"
+$NimbleUser=        "admin"
+$NimblePassword=    "admin"
+$AZNSoutfile =      "C:\NimbleStorage\Logs\NimbleInstall.log"
+$RunOnce=           "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
+$ScriptLocation=    'C:\NimbleStorage\NimbleStorageUnattended.ps1'
+$RunOnceValue=      'C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + $ScriptLocation
 
 function Set-NSASSecurityProtocolOverride
 {   # Will override the behavior of Invoke-WebRequest to allow access without a Certificate. 
@@ -54,7 +54,7 @@ function Set-NSASSecurityProtocolOverride
     [ServerCertificateValidationCallback]::Ignore()
 }
 function Setup-ASNSLogEvents([String] $AZNSaction, [String]$AZNSStep )
-{   # Valid options for hte action are either "StartLog" or "EndLog"
+{   # Valid options for the action are either "StartLog" or "EndLog" or defining a step number
     if ( $AZNSaction -like "StartLog")
         {   # Create the location for the log file
             if (! (test-path $AZNSoutfile))
@@ -247,14 +247,31 @@ function Store-AZNSCreds
     Post-AZNSEvent "To obtain username use Username= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
     Post-AZNSEvent "To obtain password use Password= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password" "Info"
 }
+function Setup-AZNSNimbleWindowsToolkit
+{   #Configure the NWT with the supplied Username and Password.
+    import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
+    if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
+    {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
+    } else 
+    {   $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
+        Post-AZNSEvent $MyNimUsername+" is the Useranme" "Info"
+        $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
+        Post-AZNSEvent $MyNimPassword+" is the Password" "Info"
+        $NimblePasswordObect = ConvertTo-SecureString $MyNimPassword -AsPlainText -force
+        $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
+        set-nwtconfiguration -groupmgmtip $NimbleArrayIP -Credential $NimbleCredObject
+        Post-AZNSEvent "The Nimble Windows Toolkit has been Configured" "info"
+    } 
+}
+
 #####################################################################################################################################################
 # MAIN Unattended Installation Script for Nimble Storag on Azure Stack.                                                                             #
 #####################################################################################################################################################
 # Set the Global Variables needed for the script to operate
     
 # Step 1. Lets Add a Header to the Log File
-    Setup-ASNSLogEvents Step 1
     Setup-ASNSLogEvents Startlog
+    Setup-ASNSLogEvents Step 1
 # Step 2. Load the Azure Stack Specific PowerShell modules
     Setup-ASNSLogEvents Step 2
     Load-NSASAzureModules 
@@ -281,21 +298,25 @@ function Store-AZNSCreds
     if (-not $ForceReboot) 
         {   $ForceReboot=Load-NWTPackage
         }
-# Step A. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
+# Step 10. Configur the NWT using PowerShell
     Setup-ASNSLogEvents Step 10
+    Setup-AZNSNimbleWindowsToolkit
+# Step A. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
+    Setup-ASNSLogEvents Step 11
     if ($ForceReboot)
         {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
             Post-AZNSEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
-            write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
-            start-sleep -Seconds 60
-            shutdown -t 0 -r -f
         } else 
         {   if (Get-ItemProperty -Path $RunOnce) 
                 {   remove-itemproperty $RunOnce "NextRun"
                     Post-AZNSEvent "This script will NOT be re-run on reboot" "warning"        
                 }
-            Post-AZNSEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"
+            Post-AZNSEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"     
         }
-# Step B. Adding a End Strip to the Log file
-    Setup-ASNSLogEvents Step 11
-    Setup-ASNSLogEvents Endlog      
+    Setup-ASNSLogEvents Endlog 
+    if ($ForceReboot)
+        {   write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
+            start-sleep -Seconds 60
+            shutdown -t 0 -r -f
+        }
+    
