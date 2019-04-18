@@ -167,24 +167,30 @@ function Load-WindowsMPIOFeature
 }
 function Load-NWTPackage
 {   # Download and instlal the Nimble Windows Toolkit. If already installed, return false, otherwise install and request a reboot.
-    $NWTsoftware="Nimble Windows Toolkit"
-    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
-    if ($installed)
-    {   Post-AZNSEvent "The Nimble Windows Toolkit is already installed" "Information"
-        return $false
-    } else
-    {   # If NWT not installed, silent install it
-        invoke-webrequest -uri $NWTuri -outfile "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
-        $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
-        $NWTArg1 = "EULAACCEPTED=Yes"
-        $NWTArg2 = "HOTFIXPASS=Yes"
-        $NWTArg3 = "RebootYesNo=Yes"
-        $NWTArg4 = "NIMBLEVSSPORT=Yes"
-        $NWTArg5 = "/silent"
-        & $NWTEXE $NWTArg1 $NWTArg2 $NWTArg3 $NWTArg4 $NWTArg5
-        # Invoke-Command -ScriptBlock "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
-        Post-AZNSEvent "Initiating download and Silent Installation of the Nimble Windows Toolkit" "Warning"
-        return $true
+    if ($ForceReboot)
+    {   Post-AZNSEvent "The Nimble Windows Toolkit Cannot install since reboot is pending" "warning"
+        return $ForceReboot 
+    }
+    else
+    {   $NWTsoftware="Nimble Windows Toolkit"
+        $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
+        if ($installed)
+        {   Post-AZNSEvent "The Nimble Windows Toolkit is already installed" "Information"
+            return $false
+        } else
+        {   # If NWT not installed, silent install it
+            invoke-webrequest -uri $NWTuri -outfile "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
+            $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWT-x64.5.0.0.7991.exe"
+            $NWTArg1 = "EULAACCEPTED=Yes"
+            $NWTArg2 = "HOTFIXPASS=Yes"
+            $NWTArg3 = "RebootYesNo=Yes"
+            $NWTArg4 = "NIMBLEVSSPORT=Yes"
+            $NWTArg5 = "/silent"
+            & $NWTEXE $NWTArg1 $NWTArg2 $NWTArg3 $NWTArg4 $NWTArg5
+            # Invoke-Command -ScriptBlock "C:\NimbleStorage\Setup-NimbleNWTx64.0.0.0.XXX.exe EULAACCEPTED=Yes HOTFIXPASS=Yes RebootYesNo=Yes NIMBLEVSSPORT=Yes /silent"
+            Post-AZNSEvent "Initiating download and Silent Installation of the Nimble Windows Toolkit" "Warning"
+            return $true
+        }
     }
 }
 function Configure-AZNSiSCSI
@@ -295,20 +301,18 @@ function Setup-AZNSNimbleWindowsToolkit
     $ForceReboot=Load-WindowsMPIOFeature
 # Step 9. If NWT not downloaded, download it. If it is downloaded and installed require reboot, otherwise to do not set reboot flag
     Setup-ASNSLogEvents Step 9
-    if (-not $ForceReboot) 
-        {   $ForceReboot=Load-NWTPackage
-        }
+    $ForceReboot=Load-NWTPackage
 # Step 10. Configur the NWT using PowerShell
     Setup-ASNSLogEvents Step 10
     Setup-AZNSNimbleWindowsToolkit
 # Step A. If the ForceReboot flag is set, make this script run at the next reboot, otherise exit successfully/complete.
     Setup-ASNSLogEvents Step 11
     if ($ForceReboot)
-        {   set-itemproperty $RunOnce "NextRun" $RunOnceValue
-            Post-AZNSEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Error"
+        {   set-itemproperty -path $RunOnce "NextRun" $RunOnceValue
+            Post-AZNSEvent "This Installation Script is set to run again once the server has been rebooted. Please Reboot this server" "Warning"
         } else 
         {   if (Get-ItemProperty -Path $RunOnce) 
-                {   remove-itemproperty $RunOnce "NextRun"
+                {   remove-itemproperty -path $RunOnce "NextRun"
                     Post-AZNSEvent "This script will NOT be re-run on reboot" "warning"        
                 }
             Post-AZNSEvent "This Script has verified that all required software is installed, and that no reboot is needed" "Information"     
