@@ -30,6 +30,8 @@ function Connect-AZNSVolume
         # Now that it is mapped, lets connect the target via iscsi
         Update-IscsiTarget
         get-iscsitarget | where-object {$_.isconnected -ne "True"} | connect-iscsitarget
+        Update-IscsiTarget
+        start-sleep -Seconds 60
         # Lets find the disk and format this
         $NNum=(Get-nSVolume -name $name).serial_number
         write-host "The Detected Volume Serial number is $NNum"
