@@ -145,15 +145,16 @@ function Load-NimblePSTKModules
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
         expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $WindowsPowerShellModulePath
 
-        Post-AZNSEvent "Now adding the AzureStack Command" "Warning"
-        invoke-webrequest -uri $UpdatedPSTKcmd -outfile "C:\NimbleStorage\AzureStack.ps1"
-        $AZNSScripts="C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit\scripts"
-        Copy 'C:\NimbleStorage\AzureStack.ps1' $AZNSScripts
-
         Post-AZNSEvent "Now Changing the Nimble Powershell toolkit to add the AzureStack command" "Warning"
         invoke-webrequest -uri $UpdatedPSTK -outfile "C:\NimbleStorage\NimPSSDK.psm1"
-        $AZNSRoot="C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit"
-        Copy 'C:\NimbleStorage\NimPSSDK.psm1' $AZNSRoot
+        $AZNSRoot=$PSMPath+"\HPENimblePowerShellToolkit"
+        Copy-item -path 'C:\NimbleStorage\NimPSSDK.psm1' -destination $AZNSRoot -force
+
+        Post-AZNSEvent "Now adding the AzureStack Command" "Warning"
+        invoke-webrequest -uri $UpdatedPSTKcmd -outfile "C:\NimbleStorage\AzureStack.ps1"
+        $AZNSScripts=$AZNSRoot+"\scripts"
+        Copy-item -path 'C:\NimbleStorage\AzureStack.ps1' -Destination $AZNSScripts -force
+
     }
 }
 function Load-WindowsMPIOFeature
