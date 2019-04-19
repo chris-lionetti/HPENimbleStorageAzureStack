@@ -34,9 +34,7 @@ function Connect-AZNSVolume
         $NNum=(Get-nSVolume -name $name).serial_number
         write-host "The Detected Volume Serial number is $NNum"
         "rescan" | diskpart
-        $DNum=(get-disk | where { $_.SerialNumber -like $NNum } )
-        write-host "The detected Windows Disk is number $DNum"
-        get-disk $DNim | Initialize-Disk -PartitionStyle GPT | set-disk -IsOffline $false | New-Partition -UseMaximumSize | Format-Volume
+        get-disk -serialnumber $NNum | Initialize-Disk -passthru | set-disk -IsOffline $false | New-Partition -UseMaximumSize -assigndriveletter | Format-Volume -filesystem NTFS -NewFileSystemLabel $name -confirm $false
     }
 }
 
