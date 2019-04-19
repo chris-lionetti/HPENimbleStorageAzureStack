@@ -16,7 +16,7 @@
 
 # Variable Block
 $NWTuri=            'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.5.0.0.7991.exe'
-$NimblePSTKuri=     'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.210.zip'   
+$NimblePSTKuri=     'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.300.zip'   
 $WindowsPowerShellModulePath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
 $NimbleArrayIP=     "10.1.240.20"
 $NimbleUser=        "admin"
@@ -141,9 +141,9 @@ function Load-NimblePSTKModules
     {   Post-AZNSEvent "The HPE NimbleStorage PowerShell Toolkit is installed" "Info"
     } else 
     {   Post-AZNSEvent "Now Installing the Nimble PowerShell Toolkit" "Warning"
-        invoke-webrequest -uri $NimblePSTKuri -outfile "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip"
+        invoke-webrequest -uri $NimblePSTKuri -outfile "C:\NimbleStorage\HPENimblePowerShellToolkit.300.zip"
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-        expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $WindowsPowerShellModulePath
+        expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.300.zip" -DestinationPath $WindowsPowerShellModulePath
 
         Post-AZNSEvent "Now Changing the Nimble Powershell toolkit to add the AzureStack command" "Warning"
         invoke-webrequest -uri $UpdatedPSTK -outfile "C:\NimbleStorage\NimPSSDK.psm1"
