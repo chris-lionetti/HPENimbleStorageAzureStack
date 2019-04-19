@@ -256,14 +256,19 @@ function Store-AZNSCreds
         }   
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name UserName -ErrorAction SilentlyContinue) )
         {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name UserName -Value $NimbleUser -ErrorAction SilentlyContinue
-            Post-AZNSEvent "Storing credential under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+            Post-AZNSEvent "Storing credential username under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         }    
     if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name Password -ErrorAction SilentlyContinue) )
         {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name Password -Value $NimblePassword -ErrorAction SilentlyContinue
-            Post-AZNSEvent "Storing credential under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+            Post-AZNSEvent "Storing credential password under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
         } 
-    Post-AZNSEvent "To obtain username use Username= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
-    Post-AZNSEvent "To obtain password use Password= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password" "Info"
+    if (! (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred -name IPAddress -ErrorAction SilentlyContinue) )
+        {   New-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred -PropertyType String -Name IPAddress -Value $NimbleArrayIP -ErrorAction SilentlyContinue
+            Post-AZNSEvent "Storing credential IP Address under HKCU:\Software\NimbleStorage\Credentials\DefaultCred" "Info"
+        } 
+    Post-AZNSEvent "To obtain username use Username = (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).UserName" "Info"
+    Post-AZNSEvent "To obtain password use Password = (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).Password" "Info"
+    Post-AZNSEvent "To obtain password use IPAddress= (Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\NimbleStorage\DefaultCred).IPAddress" "Info"
 }
 function Setup-AZNSNimbleWindowsToolkit
 {   #Configure the NWT with the supplied Username and Password.
