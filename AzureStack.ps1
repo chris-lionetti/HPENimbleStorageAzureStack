@@ -29,11 +29,13 @@ function Connect-AZNSVolume
         New-NSAccessControlRecord -initiator_group_id $MyIgroupID -vol_id $NewVolID
         # Now that it is mapped, lets connect the target via iscsi
         Update-IscsiTarget
-        get-iscsitarget | where {$_.isconnected} | connect-iscsitarget -IsPersistent $True
+        get-iscsitarget | where-object {$_.isconnected -ne "True"} | connect-iscsitarget
         # Lets find the disk and format this
-        rescan | diskpart
         $NNum=(Get-nSVolume -name $name).serial_number
+        write-host "The Detected Volume Serial number is $NNum"
+        "rescan" | diskpart
         $DNum=(get-disk | where { $_.SerialNumber -like $NNum } )
+        write-host "The detected Windows Disk is number $DNum"
         get-disk $DNim | Initialize-Disk -PartitionStyle GPT | set-disk -IsOffline $false | New-Partition -UseMaximumSize | Format-Volume
     }
 }
