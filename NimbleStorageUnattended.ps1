@@ -153,7 +153,7 @@ function Load-NimblePSTKModules
         Post-AZNSEvent "Now Changing the Nimble Powershell toolkit to add the AzureStack command" "Warning"
         invoke-webrequest -uri $UpdatedPSTK -outfile "C:\NimbleStorage\NimPSSDK.ps1"
         $AZNSRoot="C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit"
-        Copy 'C:\NimbleStorage\NimPSSDK.ps1' $AZNSRoot
+        Copy 'C:\NimbleStorage\NimPSSDK.psm1' $AZNSRoot
     }
 }
 function Load-WindowsMPIOFeature

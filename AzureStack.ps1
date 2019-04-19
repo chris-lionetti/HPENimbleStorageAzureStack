@@ -30,7 +30,7 @@ function Connect-AZNSVolume
         get-iscsitarget | connect-iscsitarget -IsPersistent $True
         # Lets find the disk and format this
         $NNum=(Get-nSVolume -name $name).serial_number
-        $DNum=(get-disk | where { $_.SerialNumber $NNum } )
+        $DNum=(get-disk | where { $_.SerialNumber -like $NNum } )
         get-disk $DNim | Initialize-Disk -PartitionStyle GPT | set-disk -IsOffline $false | New-Partition -UseMaximumSize | Format-Volume
     }
 }
