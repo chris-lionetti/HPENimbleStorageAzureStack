@@ -25,6 +25,8 @@ $AZNSoutfile =      "C:\NimbleStorage\Logs\NimbleInstall.log"
 $RunOnce=           "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
 $ScriptLocation=    'C:\NimbleStorage\NimbleStorageUnattended.ps1'
 $RunOnceValue=      'C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + $ScriptLocation
+$UpdatedPSTKcmd=    'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/AzureStack.ps1'
+$UpdatedPSTK=       'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/NimPSSDK.psm1'
 
 function Set-NSASSecurityProtocolOverride
 {   # Will override the behavior of Invoke-WebRequest to allow access without a Certificate. 
@@ -142,6 +144,16 @@ function Load-NimblePSTKModules
         invoke-webrequest -uri $NimblePSTKuri -outfile "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip"
         $PSMPath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
         expand-archive -path "C:\NimbleStorage\HPENimblePowerShellToolkit.210.zip" -DestinationPath $WindowsPowerShellModulePath
+
+        Post-AZNSEvent "Now adding the AzureStack Command" "Warning"
+        invoke-webrequest -uri $UpdatedPSTKcmd -outfile "C:\NimbleStorage\AzureStack.ps1"
+        $AZNSScripts="C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit\scripts"
+        Copy 'C:\NimbleStorage\AzureStack.ps1' $AZNSScripts
+
+        Post-AZNSEvent "Now Changing the Nimble Powershell toolkit to add the AzureStack command" "Warning"
+        invoke-webrequest -uri $UpdatedPSTK -outfile "C:\NimbleStorage\NimPSSDK.ps1"
+        $AZNSRoot="C:\Windows\System32\WindowsPowerShell\v1.0\Modules\HPENimblePowerShellToolkit"
+        Copy 'C:\NimbleStorage\NimPSSDK.ps1' $AZNSRoot
     }
 }
 function Load-WindowsMPIOFeature
