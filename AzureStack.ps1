@@ -28,8 +28,10 @@ function Connect-AZNSVolume
         $MyIgroupID = (Get-NSInitiatorGroup -name (hostname)).id
         New-NSAccessControlRecord -initiator_group_id $MyIgroupID -vol_id $NewVolID
         # Now that it is mapped, lets connect the target via iscsi
-        get-iscsitarget | connect-iscsitarget -IsPersistent $True
+        Update-IscsiTarget
+        get-iscsitarget | where {$_.isconnected} | connect-iscsitarget -IsPersistent $True
         # Lets find the disk and format this
+        rescan | diskpart
         $NNum=(Get-nSVolume -name $name).serial_number
         $DNum=(get-disk | where { $_.SerialNumber -like $NNum } )
         get-disk $DNim | Initialize-Disk -PartitionStyle GPT | set-disk -IsOffline $false | New-Partition -UseMaximumSize | Format-Volume
