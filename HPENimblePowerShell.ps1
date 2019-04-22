@@ -34,6 +34,7 @@ write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
 start-sleep -Seconds 60
 shutdown -t 0 -r -f
 '@
+
 mkdir C:\NimbleStorage -ErrorAction SilentlyContinue 
 out-file -filepath C:\NimbleStorage\InitialPull.ps1 -inputobject $InitialPull -force
 $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"

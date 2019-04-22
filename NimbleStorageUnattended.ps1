@@ -275,9 +275,9 @@ function Setup-AZNSNimbleWindowsToolkit
 {   #Configure the NWT with the supplied Username and Password.
     $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
     if ($installed)
-        {   cd C:\Program Files\Nimble Storage\Bin\
+        {   cd "C:\Program Files\Nimble Storage\Bin\"
             import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
-            cd c:\nimbleStorage
+            cd "c:\nimbleStorage"
             if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
                 {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
                 } else 
