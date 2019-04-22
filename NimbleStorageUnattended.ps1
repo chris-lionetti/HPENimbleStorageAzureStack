@@ -276,7 +276,7 @@ function Setup-AZNSNimbleWindowsToolkit
     $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
     if ($installed)
         {   set-location -path 'C:\Program Files\Nimble Storage\Bin\'
-            import-module -path 'C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1'
+            import-module 'C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1'
             set-location -Path 'C:\nimbleStorage'
             if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
                 {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
