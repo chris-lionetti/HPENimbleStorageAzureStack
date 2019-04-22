@@ -273,19 +273,22 @@ function Store-AZNSCreds
 }
 function Setup-AZNSNimbleWindowsToolkit
 {   #Configure the NWT with the supplied Username and Password.
-    import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
-    if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
-    {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
-    } else 
-    {   $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
-        Post-AZNSEvent $MyNimUsername+" is the Useranme" "Info"
-        $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
-        Post-AZNSEvent $MyNimPassword+" is the Password" "Info"
-        $NimblePasswordObect = ConvertTo-SecureString $MyNimPassword -AsPlainText -force
-        $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
-        set-nwtconfiguration -groupmgmtip $NimbleArrayIP -Credential $NimbleCredObject
-        Post-AZNSEvent "The Nimble Windows Toolkit has been Configured" "info"
-    } 
+    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
+    if ($installed)
+        {    import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
+            if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
+                {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
+                } else 
+                {   $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
+                    Post-AZNSEvent $MyNimUsername+" is the Useranme" "Info"
+                    $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
+                    Post-AZNSEvent $MyNimPassword+" is the Password" "Info"
+                    $NimblePasswordObect = ConvertTo-SecureString $MyNimPassword -AsPlainText -force
+                    $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
+                    set-nwtconfiguration -groupmgmtip $NimbleArrayIP -Credential $NimbleCredObject
+                    Post-AZNSEvent "The Nimble Windows Toolkit has been Configured" "info"
+                }
+        } 
 }
 
 #####################################################################################################################################################
