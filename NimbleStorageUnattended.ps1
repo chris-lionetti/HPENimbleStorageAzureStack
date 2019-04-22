@@ -28,6 +28,20 @@ $RunOnceValue=      'C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -
 $UpdatedPSTKcmd=    'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/AzureStack.ps1'
 $UpdatedPSTK=       'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/NimPSSDK.psm1'
 
+function Post-AZNSEvent([String]$AZNSTextField, [string]$AZNSEventType)
+{   # Subroutine to Post Events to Log/Screen/EventLog
+    switch -wildcard ($Eventtype)
+        {   "Info*"     { $AZNScolor="gray" }
+            "Warn*"     { $AZNScolor="green" }
+            "Err*"      { $AZNScolor="yellow" }
+            "Cri*"      { $AZNScolor="red"
+                          $AZNSEventType="Error" }
+            default     { $AZNScolor="gray" }
+        }
+    write-host "- "$AZNStextfield -foregroundcolor $AZNScolor
+    Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $AZNSTextField -EntryType $AZNSEventType -Computername "." -category 0
+    $AZNSTextField | out-file -filepath $AZNSoutfile -append
+} 
 function Set-NSASSecurityProtocolOverride
 {   # Will override the behavior of Invoke-WebRequest to allow access without a Certificate. 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -81,23 +95,9 @@ function Setup-ASNSLogEvents([String] $AZNSaction, [String]$AZNSStep )
 
         }
 }
-function Post-AZNSEvent([String]$AZNSTextField, [string]$AZNSEventType)
-{   # Subroutine to Post Events to Log/Screen/EventLog
-    switch -wildcard ($Eventtype)
-        {   "Info*"     { $AZNScolor="gray" }
-            "Warn*"     { $AZNScolor="green" }
-            "Err*"      { $AZNScolor="yellow" }
-            "Cri*"      { $AZNScolor="red"
-                          $AZNSEventType="Error" }
-            default     { $AZNScolor="gray" }
-        }
-    write-host "- "$AZNStextfield -foregroundcolor $AZNScolor
-    Write-Eventlog -LogName Application -Source NimbleStorage -EventID 1 -Message $AZNSTextField -EntryType $AZNSEventType -Computername "." -category 0
-    $AZNSTextField | out-file -filepath $AZNSoutfile -append
-} 
 function Load-NSASAzureModules
 {   # Loads all of the Nimble Storage Azure Stack specific PowerShell Modules
-    if (-not (import-Module -name AzureRM.Storage -ErrorAction SilentlyContinue) )
+    if (-not (get-Module -name AzureRM.Storage -ErrorAction SilentlyContinue) )
     {   Post-AZNSEvent "The required AzureStack Powershell are being Installed" "Info"
         Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201 -force
             Post-AZNSEvent "Install-Packageprovider -name NuGet -MinimumVersion 2.8.5.201" "Info"
@@ -275,7 +275,9 @@ function Setup-AZNSNimbleWindowsToolkit
 {   #Configure the NWT with the supplied Username and Password.
     $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
     if ($installed)
-        {    import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
+        {   cd C:\Program Files\Nimble Storage\Bin\
+            import-module "C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1"
+            cd c:\nimbleStorage
             if ( Get-NWTConfiguration | where{$_.GroupMgmtIPList -ne ""} )
                 {   Post-AZNSEvent "The Nimble Windows Toolkit has already been configured" "info"
                 } else 
