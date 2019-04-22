@@ -30,7 +30,7 @@ out-file -FilePath "C:\NimbleStorage\NimbleStorageUnAttended.ps1" -inputobject $
 
 $RunOnce="HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
 set-itemproperty $RunOnce "NextRun" ('C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + 'C:\NimbleStorage\NimbleStorageUnattended.ps1')
-write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
+write-host "Hit CTRL-C in next 60 seconds to abort the AutoReboot cycle"
 start-sleep -Seconds 60
 shutdown -t 0 -r -f
 '@
