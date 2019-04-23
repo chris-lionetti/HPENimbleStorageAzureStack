@@ -117,16 +117,12 @@ function Load-NSASAzureModules
             Post-AZNSEvent "install-module AzureRM -RequiredVersion 2.4.0" "Info"
         Install-Module -name AzureStack -RequiredVersion 1.7.1
             Post-AZNSEvent "Install-Module -name AzureStack -RequiredVersion 1.7.1" "Info"
-        # Install the Azure.Storage module version 4.5.0
         Install-Module -Name Azure.Storage -RequiredVersion 4.5.0 -Force -AllowClobber
             Post-AZNSEvent "Install-Module -Name Azure.Storage -RequiredVersion 4.5.0 -Force -AllowClobber" "Info"
-        # Install the AzureRm.Storage module version 5.0.4
         Install-Module -Name AzureRM.Storage -RequiredVersion 5.0.4 -Force -AllowClobber
             Post-AZNSEvent "Install-Module -Name AzureRM.Storage -RequiredVersion 5.0.4 -Force -AllowClobber" "Info"
-        # Remove incompatible storage module installed by AzureRM.Storage
         Uninstall-Module Azure.Storage -RequiredVersion 4.6.1 -Force
             Post-AZNSEvent "Uninstall-Module Azure.Storage -RequiredVersion 4.6.1 -Force" "Info"
-        # Load the modules explicitly specifying the versions
         Import-Module -Name Azure.Storage -RequiredVersion 4.5.0
             Post-AZNSEvent "Import-Module -Name Azure.Storage -RequiredVersion 4.5.0" "Info"
         Import-Module -Name AzureRM.Storage -RequiredVersion 5.0.4
@@ -186,7 +182,7 @@ function Load-NWTPackage
     }
     else
     {   $NWTsoftware="Nimble Windows Toolkit"
-        $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
+        $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq 'Nimble Windows Toolkit' }) -ne $null
         if ($installed)
         {   Post-AZNSEvent "The Nimble Windows Toolkit is already installed" "Information"
             return $false
@@ -273,7 +269,7 @@ function Store-AZNSCreds
 }
 function Setup-AZNSNimbleWindowsToolkit
 {   #Configure the NWT with the supplied Username and Password.
-    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $NWTsoftware }) -ne $null
+    $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq 'Nimble Windows Toolkit' }) -ne $null
     if ($installed)
         {   set-location -path 'C:\Program Files\Nimble Storage\Bin\'
             import-module 'C:\Program Files\Nimble Storage\Bin\Nimble.PowerShellCmdlets.psd1'
