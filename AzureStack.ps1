@@ -87,7 +87,7 @@ function Connect-AZNSVolume
                 $count=$count+1
                 write-host "." -NoNewline
                 $verbose = "rescan" | diskpart
-                start-sleep -Seconds 10
+                start-sleep -Seconds 10 # If you shorten this, the script locks up since too many fast refreshes make iscsi crash
             }
         Stop-Service -Name ShellHWDetection
         start-sleep -seconds 1
