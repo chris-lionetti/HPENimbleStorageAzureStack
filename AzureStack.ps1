@@ -76,18 +76,18 @@ function Connect-AZNSVolume
             {   write-progress -activity "Connect Nimble Storage Volume" -status "Refreshing and Detecting hosts new iSCSI Targets" -PercentComplete $count
                 Update-IscsiTarget
                 write-host "." -NoNewline 
-                $count=( $count+1,64 | measure-object -Maximum).Maximum
-                start-sleep -seconds 2
+                $count=$count+1
+                start-sleep -seconds 10
             }
         $count=65
         $OutputSuppress = Get-iscsiTarget | where-object {$_.nodeaddress -eq $AM} | connect-iscsitarget -IsPersistent $true
         write-host "Detecting Disk." -NoNewline
         while ( -not (get-disk -serialnumber $NNum -ErrorAction SilentlyContinue) )
             {   write-progress -activity "Connect Nimble Storage Volume" -status "Discovering Nimble Volume in Windows Volume Disk Service" -PercentComplete $count
-                $count=( $count+1,89 | measure-object -Maximum).Maximum
+                $count=$count+1
                 write-host "." -NoNewline
                 $verbose = "rescan" | diskpart
-                start-sleep -Seconds 2
+                start-sleep -Seconds 10
             }
         Stop-Service -Name ShellHWDetection
         start-sleep -seconds 1
