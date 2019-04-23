@@ -156,7 +156,7 @@ function Load-NimblePSTKModules
 function Load-WindowsMPIOFeature
 {   # Load the Windows MPIO feature. Returns True if a Reboot is required.
     if( (get-WindowsFeature -name "Multipath-io").installed )
-    {   Post-AZNSEvent "The Windows Multipath IO Feature is already Insatlled" "Information"
+    {   Post-AZNSEvent "The Windows Multipath IO Feature is already Installed" "Information"
         if ( (get-windowsFeature -name "Multipath-io").InstallState -ne "Installed")
             {   Post-AZNSEvent "Reboot is required after a Windows Multipath IO Feature Installation" "Warning"
                 $ForceReboot=$True
@@ -299,7 +299,7 @@ function Setup-AZNSNimbleWindowsToolkit
     Setup-ASNSLogEvents Step 1
 # Step 2. Load the Azure Stack Specific PowerShell modules
     Setup-ASNSLogEvents Step 2
-    Load-NSASAzureModules 
+    # Load-NSASAzureModules 
 # Step 3. All all Invoke-Web* commands to operate without a certificate. 
     Setup-ASNSLogEvents Step 3
     Set-NSASSecurityProtocolOverride
@@ -338,7 +338,7 @@ function Setup-AZNSNimbleWindowsToolkit
         }
     Setup-ASNSLogEvents Endlog 
     if ($ForceReboot)
-        {   write-host "Hit CTRL-C in next 60 seconds to abortt the AutoReboot cycle"
+        {   write-host "Hit CTRL-C in next 60 seconds to abort the AutoReboot cycle"
             start-sleep -Seconds 60
             shutdown -t 0 -r -f
         }

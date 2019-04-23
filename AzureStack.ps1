@@ -74,14 +74,14 @@ function Connect-AZNSVolume
         while ( -not (Get-iscsiTarget | where-object {$_.nodeaddress -eq $AM}) ) 
             {   write-progress -activity "Connect Nimble Storage Volume" -status "Refreshing and Detecting hosts new iSCSI Targets" -PercentComplete $count
                 Update-IscsiTarget
-                $count=$count+3
+                $count=( $count+1,64 | measure-object -Maximum).Maximum
                 start-sleep -seconds 2
             }
         $count=65
         $OutputSuppress = Get-iscsiTarget | where-object {$_.nodeaddress -eq $AM} | connect-iscsitarget -IsPersistent $true
         while ( -not (get-disk -serialnumber $NNum -ErrorAction SilentlyContinue) )
             {   write-progress -activity "Connect Nimble Storage Volume" -status "Discovering Nimble Volume in Windows Volume Disk Service" -PercentComplete $count
-                $count=$count+3
+                $count=( $count+1,89 | measure-object -Maximum).Maximum
                 $verbose = "rescan" | diskpart
                 start-sleep -Seconds 2
             }
