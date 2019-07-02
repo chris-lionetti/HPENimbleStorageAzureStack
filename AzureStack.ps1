@@ -51,15 +51,18 @@ function Connect-AZNSVolume
     process
     {   write-progress -activity "Connect Nimble Storage Volume" -status "retrieving stored credentials" -PercentComplete 0
         # First lets make sure we are connected to the controller
+        <#
         $MyLocalIQN=(Get-InitiatorPort | where-object {$_.ConnectionType -like "iSCSI"} ).nodeaddress
         $MyNimUsername=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).UserName
         $MyNimPassword=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).Password
         $MyNimIPAddress=(Get-ItemProperty -Path HKCU:\Software\NimbleStorage\Credentials\DefaultCred).IPAddress
         $NimblePasswordObect = ConvertTo-SecureString $MyNimPassword -AsPlainText -force
         $NimbleCredObject = new-object -typename System.Management.Automation.PSCredential -argumentlist $MyNimUsername, $NimblePasswordObect
+        $OutputSuppress = Connect-NSGroup -Group $MyNimIPAddress -Credential $NimbleCredObject -IgnoreServerCertificate
+        #>
         start-sleep -seconds 1
         write-progress -activity "Connect Nimble Storage Volume" -status "Connecting to Nimble Storage Target" -PercentComplete 10
-        $OutputSuppress = Connect-NSGroup -Group $MyNimIPAddress -Credential $NimbleCredObject -IgnoreServerCertificate
+        $OutputSuppress = Connect-AzNsGroup -UserNWTCredentials $true -IgnoreServerCertificate
         start-sleep -seconds 1
         write-progress -activity "Connect Nimble Storage Volume" -status "Creating and mapping Nimble Volume" -PercentComplete 20
         $OutputSuppress = New-NSVolume -name $name -description $description -size $size
