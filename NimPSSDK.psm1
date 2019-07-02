@@ -88,5 +88,6 @@ Export-ModuleMember -Function Test-NS2PasswordFormat,   Test-Ns2Type,   Test-NS2
     Set-NSFibreChannelInterface,    Get-NSFibreChannelSession,    New-NSArray,    Get-NSArray,   
     Set-NSArray,    Remove-NSArray,    Invoke-NSArray,    Stop-NSArray,   
     Reset-NSArray,    Get-NSAlarm,    Set-NSAlarm,    Remove-NSAlarm,   
-    Clear-NSAlarm,    Undo-NSAlarm,     Connect-AZNSVolume
+    Clear-NSAlarm,    Undo-NSAlarm,     Connect-AZNSVolume, 
+    Test-NSNimbleWindowsToolkitInstalledConfigured, Get-NSNimbleWindowsToolkitCredentials, Connect-AZNSGroup
 
