@@ -18,15 +18,20 @@
 $NWTuri=            'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/Setup-NimbleNWT-x64.6.0.1.3252.exe'
 $NimblePSTKuri=     'https://github.com/chris-lionetti/HPENimbleStorageAzureStack/raw/master/HPENimblePowerShellToolkit.300.zip'   
 $WindowsPowerShellModulePath="C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
-$NimbleArrayIP=     "10.1.240.20"
-$NimbleUser=        "admin"
-$NimblePassword=    "admin"
+# $NimbleArrayIP=     "10.1.240.20"
+# $NimbleUser=        "admin"
+# $NimblePassword=    "admin"
 $AZNSoutfile =      "C:\NimbleStorage\Logs\NimbleInstall.log"
 $RunOnce=           "HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce"
 $ScriptLocation=    'C:\NimbleStorage\NimbleStorageUnattended.ps1'
 $RunOnceValue=      'C:\Windows\System32\WindowsPowerShell\v1.0\Powershell.exe -executionPolicy Unrestricted -File ' + $ScriptLocation
 $UpdatedPSTKcmd=    'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/AzureStack.ps1'
 $UpdatedPSTK=       'https://raw.githubusercontent.com/chris-lionetti/HPENimbleStorageAzureStack/master/NimPSSDK.psm1'
+
+$NimbleUser = (Get-ItemProperty -Path HKLM:\Software\AzureStackNimbleStorage).NimbleUserName
+$NimblePassword=(Get-ItemProperty -Path HKLM:\Software\AzureStackNimbleStorage).NimblePassword
+$NimbleArrayIP = (Get-ItemProperty -Path HKLM:\Software\AzureStackNimbleStorage).NimbleArrayIP
+write-host "Your username is $NimbleUser and password is $NimblePassword and IP Address is $NimbleArrayIP"
 
 function Post-AZNSEvent([String]$AZNSTextField, [string]$AZNSEventType)
 {   # Subroutine to Post Events to Log/Screen/EventLog
