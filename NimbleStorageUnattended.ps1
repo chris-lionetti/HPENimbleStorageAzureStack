@@ -188,7 +188,7 @@ function Load-NWTPackage
             return $false
         } else
         {   # If NWT not installed, silent install it
-            invoke-webrequest -uri $NWTuri -outfile "C:\Setup-NimbleNWT-current.exe"
+            invoke-webrequest -uri $NWTuri -outfile "C:\NimbleStorage\Setup-NimbleNWT-current.exe"
             $NWTEXE = "C:\NimbleStorage\Setup-NimbleNWT-current.exe"
             $NWTArg1 = "EULAACCEPTED=Yes"
             $NWTArg2 = "HOTFIXPASS=Yes"
